@@ -120,9 +120,6 @@ def first_query():
                                  
             ''',
 
-        'delete_user': '''
-            DELETE FROM users WHERE id = 2;
-        '''
     }
     cursor, conn = create_connect()
 
