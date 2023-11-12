@@ -1,0 +1,12 @@
+version: '3.11'
+
+services:
+  python:
+    restart: always
+    build:
+      context: TelegramBotHR
+      dockerfile: docker/python/Dockerfile
+    volumes:
+      - ./TelegramBotHR:/srv/www/TelegramBotHR
+    command: > 
+      sh -c "python main.py"
