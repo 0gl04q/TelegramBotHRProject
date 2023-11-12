@@ -11,7 +11,7 @@ def keyboard_list(items, key: str) -> InlineKeyboardMarkup:
 
 
 # Клавиатура для пользователя
-def keyboard_menu_user(language='Russian') -> ReplyKeyboardMarkup:
+def keyboard_menu_user(language='ru') -> ReplyKeyboardMarkup:
     questions = [
         {
             'ru': 'Проверить наличие опросов',

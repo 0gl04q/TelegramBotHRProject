@@ -78,15 +78,14 @@ async def get_shared_user(message: Message, state: FSMContext):
 
     # Добавление пользователя
     if message.user_shared.request_id == 1:
-        if user_in_db is False:
+        if not user_in_db:
             await add_user(message, user_in_db)
             await state.set_state(MenuStates.choosing_action)
             await bot.send_message(
-                message.user_shared.user_id,
-                text='Вас добавили в базу',
+                chat_id=message.user_shared.user_id,
+                text='Вас добавили в HR бота!',
                 reply_markup=keyboard_menu_user()
             )
-
 
     # Назначение теста пользователю
     elif message.user_shared.request_id == 2:

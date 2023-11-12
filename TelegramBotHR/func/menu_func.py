@@ -47,4 +47,4 @@ async def start_check(answer, from_user, state):
         else:
             await answer(text=translate_text('Ваш пользователь заблокирован', to_language=language))
     else:
-        await answer(text='Спасибо за подключение бота, ожидайте пока HR добавит вас')
+        await answer(text='Спасибо за подключение, ожидайте пока HR добавит вас')
