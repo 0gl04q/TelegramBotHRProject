@@ -10,3 +10,16 @@ services:
       - ./TelegramBotHR:/srv/www/TelegramBotHR
     command: > 
       sh -c "python main.py"
+
+  pgdb:
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    container_name: pgdb
+    volumes:
+      - pgdbdata:/var/lib/postgresql/data/
+
+volumes:
+  pgdbdata: null
