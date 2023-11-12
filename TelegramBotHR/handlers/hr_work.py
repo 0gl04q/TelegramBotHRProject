@@ -93,10 +93,13 @@ async def get_shared_user(message: Message, state: FSMContext):
 
     # Смена роли пользователя
     elif message.user_shared.request_id == 3:
-        roles = db.get_roles()
-        await state.update_data(tg_id=message.user_shared.user_id)
-        await state.set_state(UpdateRoleUser.update_role)
-        await message.answer(text='Выберите роль', reply_markup=keyboard_list(roles, key='cr'))
+        if user_in_db:
+            roles = db.get_roles()
+            await state.update_data(tg_id=message.user_shared.user_id)
+            await state.set_state(UpdateRoleUser.update_role)
+            await message.answer(text='Выберите роль', reply_markup=keyboard_list(roles, key='cr'))
+        else:
+            await message.answer(text='Пользователь не писал боту')
 
 
 async def add_user(message: Message, user_in_db):
