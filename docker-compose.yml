@@ -10,6 +10,8 @@ services:
       - ./TelegramBotHR:/srv/www/TelegramBotHR
     command: > 
       sh -c "python main.py"
+    depends_on:
+      - pgdb
 
   pgdb:
     image: postgres

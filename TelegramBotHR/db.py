@@ -12,7 +12,7 @@ def create_connect():
         dbname='postgres',
         user='postgres',
         password='postgres',
-        host='localhost'
+        host='pgdb'
     )
 
     cursor = conn.cursor()
