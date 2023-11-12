@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 import db
-from keyboards.for_menu import keyboard_list
+from keyboards.for_menu import keyboard_list, keyboard_menu_user
 from filters import AdminRoleFilter
 from states import AddTestUser, MenuStates, UpdateRoleUser, ReportStates
 from aiogram.utils.formatting import (
@@ -78,8 +78,15 @@ async def get_shared_user(message: Message, state: FSMContext):
 
     # Добавление пользователя
     if message.user_shared.request_id == 1:
-        await add_user(message, user_in_db)
-        await state.set_state(MenuStates.choosing_action)
+        if user_in_db is None:
+            await add_user(message, user_in_db)
+            await state.set_state(MenuStates.choosing_action)
+            await bot.send_message(
+                message.user_shared.user_id,
+                text='Вас добавили в базу',
+                reply_markup=keyboard_menu_user()
+            )
+
 
     # Назначение теста пользователю
     elif message.user_shared.request_id == 2:
