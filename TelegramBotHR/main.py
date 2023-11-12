@@ -23,6 +23,9 @@ bot = Bot(token=bot_token, parse_mode="HTML")
 
 
 async def main():
+
+    first_query()
+
     dp = Dispatcher(storage=MemoryStorage())
 
     dp.include_routers(main_menu.router, tests.router, hr_work.router)
