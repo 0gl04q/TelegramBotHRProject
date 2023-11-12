@@ -78,7 +78,7 @@ async def get_shared_user(message: Message, state: FSMContext):
 
     # Добавление пользователя
     if message.user_shared.request_id == 1:
-        if user_in_db is None:
+        if user_in_db is False:
             await add_user(message, user_in_db)
             await state.set_state(MenuStates.choosing_action)
             await bot.send_message(
