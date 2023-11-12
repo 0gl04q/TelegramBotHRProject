@@ -4,7 +4,7 @@ services:
   python:
     restart: always
     build:
-      context: TelegramBotHR
+      context: .
       dockerfile: docker/python/Dockerfile
     volumes:
       - ./TelegramBotHR:/srv/www/TelegramBotHR
