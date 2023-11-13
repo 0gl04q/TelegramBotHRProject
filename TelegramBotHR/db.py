@@ -42,7 +42,7 @@ def first_query():
                         language_id INT,
                         name VARCHAR(100) NOT NULL,
                         status BOOLEAN,
-                        tg_id INT NOT NULL UNIQUE,
+                        tg_id BIGINT NOT NULL UNIQUE,
                         FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL,
                         FOREIGN KEY (language_id) REFERENCES languages(id) ON DELETE SET NULL
                     );
