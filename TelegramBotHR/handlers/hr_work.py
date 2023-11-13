@@ -86,6 +86,8 @@ async def get_shared_user(message: Message, state: FSMContext):
                 text='Вас добавили в HR бота!',
                 reply_markup=keyboard_menu_user()
             )
+        else:
+            await message.answer(text='Пользователь уже добавлен в бота')
 
     # Назначение теста пользователю
     elif message.user_shared.request_id == 2:
