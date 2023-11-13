@@ -3,7 +3,7 @@ import logging
 import config
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
-from handlers import main_menu, tests, hr_work
+from handlers import main_menu, tests, hr_work, user_works
 from db import first_query
 
 import os
@@ -28,7 +28,7 @@ async def main():
 
     dp = Dispatcher(storage=MemoryStorage())
 
-    dp.include_routers(main_menu.router, tests.router, hr_work.router)
+    dp.include_routers(main_menu.router, tests.router, hr_work.router, user_works.router)
 
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)

@@ -34,7 +34,7 @@ def keyboard_menu_user(language='ru') -> ReplyKeyboardMarkup:
 def keyboard_menu_HR() -> ReplyKeyboardMarkup:
     keyboard = [
         [KeyboardButton(
-            text='Назначить тест пользователю',
+            text='Назначить опрос пользователю',
             request_user=KeyboardButtonRequestUser(
                 request_id=2,
             ))],
