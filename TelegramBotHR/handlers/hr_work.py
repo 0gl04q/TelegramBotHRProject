@@ -9,6 +9,7 @@ from aiogram.utils.formatting import (
     Bold, as_list, as_marked_section, as_key_value
 )
 from main import bot
+import languages.languages as lg
 
 router = Router()
 
@@ -76,6 +77,9 @@ async def get_report_test(callback: CallbackQuery, state: FSMContext):
 async def get_shared_user(message: Message, state: FSMContext):
     user_in_db = db.get_user_by_id(tg_id=message.user_shared.user_id)
 
+    # Дефолтный язык русский
+    language_data = lg.get_languages_data()['ru']
+
     # Добавление пользователя
     if message.user_shared.request_id == 1:
         if not user_in_db:
@@ -84,7 +88,7 @@ async def get_shared_user(message: Message, state: FSMContext):
             await bot.send_message(
                 chat_id=message.user_shared.user_id,
                 text='Вас добавили в HR бота!',
-                reply_markup=keyboard_menu_user()
+                reply_markup=keyboard_menu_user(language_data)
             )
         else:
             await message.answer(text='Пользователь уже добавлен в бота')

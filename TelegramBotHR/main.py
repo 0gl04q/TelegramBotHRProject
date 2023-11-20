@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import config
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from handlers import main_menu, tests, hr_work, user_works

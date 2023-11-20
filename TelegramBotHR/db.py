@@ -12,7 +12,7 @@ def create_connect():
         dbname='postgres',
         user='postgres',
         password='postgres',
-        host='pgdb'
+        host='localhost'
     )
 
     cursor = conn.cursor()
@@ -47,7 +47,7 @@ def first_query():
                         FOREIGN KEY (language_id) REFERENCES languages(id) ON DELETE SET NULL
                     );
 
-                    CREATE TABLE IF NOT EXISTS types_tests (
+                    CREATE TABLE IF NOT EXISTS tests_types (
                         id SERIAL PRIMARY KEY,
                         name VARCHAR(20) NOT NULL
                     );
@@ -55,8 +55,16 @@ def first_query():
                     CREATE TABLE IF NOT EXISTS tests (
                         id SERIAL PRIMARY KEY,
                         type_id INT NOT NULL,
+                        FOREIGN KEY (type_id) REFERENCES tests_types(id) ON DELETE CASCADE
+                    );
+                    
+                    CREATE TABLE IF NOT EXISTS tests_names (
+                        id SERIAL PRIMARY KEY,
+                        test_id INT NOT NULL,
+                        language_id INT NOT NULL,
                         name VARCHAR(100) NOT NULL,
-                        FOREIGN KEY (type_id) REFERENCES types_tests(id) ON DELETE CASCADE
+                        FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE,
+                        FOREIGN KEY (language_id) REFERENCES languages(id) ON DELETE SET NULL
                     );
 
                     CREATE TABLE IF NOT EXISTS results_tests (
@@ -72,10 +80,12 @@ def first_query():
                     CREATE TABLE IF NOT EXISTS questions (
                         id SERIAL PRIMARY KEY,
                         test_id INT NOT NULL,
+                        language_id INT NOT NULL,
                         name VARCHAR(200) NOT NULL,
-                        FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE
+                        FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE,
+                        FOREIGN KEY (language_id) REFERENCES languages(id) ON DELETE SET NULL
                     );
-                    
+                
             ''',
 
         'insert_roles': '''
@@ -87,7 +97,7 @@ def first_query():
             ''',
 
         'insert_types': '''
-                INSERT INTO types_tests (id, name) VALUES (0, 'Q12'), (1, 'eNps') ON CONFLICT DO NOTHING;
+                INSERT INTO tests_types (id, name) VALUES (0, 'Q12'), (1, 'eNps') ON CONFLICT DO NOTHING;
             ''',
 
         'insert_su': '''     
@@ -97,25 +107,53 @@ def first_query():
             ''',
 
         'insert_tests': '''
-                INSERT INTO tests (id, type_id, name) VALUES (0, 0, 'Оценка труда'), (1, 1, 'Рекомендация места работы') ON CONFLICT DO NOTHING;        
+                INSERT INTO tests (id, type_id) VALUES (0, 0), (1, 1) ON CONFLICT DO NOTHING;        
             ''',
 
+        'insert_tests_names': '''
+                    INSERT INTO tests_names (id, test_id, language_id, name) 
+                    VALUES 
+                        (0, 0, 0, 'Оценка труда'), 
+                        (1, 0, 1, 'Job evaluation'), 
+                        
+                        (2, 1, 0, 'Рекомендация места работы'),
+                        (3, 1, 1, 'Recommendation of a place of work')
+                        
+                        ON CONFLICT DO NOTHING;        
+                ''',
+
         'insert_questions': '''
-                INSERT INTO questions (id, test_id, name) 
+                INSERT INTO questions (id, test_id, language_id, name) 
                     VALUES
-                        (0, 0, 'В последнее время, у меня была возможность заниматься интересными задачами и проектами на работе?'),
-                        (1, 0, 'Я чувствую, что мой труд и вклад в работу оцениваются и признаются моими руководителями?'),
-                        (2, 0, 'У меня есть возможность использовать свои профессиональные навыки и навыки, чтобы эффективно выполнять свою работу?'),
-                        (3, 0, 'Мне предоставляется достаточное количество задач и ответственности, чтобы чувствовать себя полезным и востребованным?'),
-                        (4, 0, 'У меня есть возможность развиваться и усовершенствовать свои профессиональные навыки на рабочем месте?'),
-                        (5, 0, 'Я чувствую, что моя работа имеет смысл и приносит вклад в общий успех компании?'),
-                        (6, 0, 'Меня поддерживают в развитии моих профессиональных целей?'),
-                        (7, 0, 'У меня есть возможность вносить предложения и идеи, касающиеся моей работы и рабочих процессов?'),
-                        (8, 0, 'Я ощущаю баланс между тем, что я делаю на работе, и тем, что мне интересно и важно?'),
-                        (9, 0, 'Мои руководители обеспечивают конструктивный обратную связь по моей работе, помогая мне расти и улучшаться?'),
-                        (10, 0, 'Я чувствую, что мои усилия направлены на достижение общих целей и стратегических приоритетов компании?'),
-                        (11, 0, 'У меня есть возможность принимать участие в проектах или инициативах, которые соответствуют моим интересам и профессиональным целям?'),
-                        (12, 1, 'Насколько вероятно, что вы порекомендуете Компанию в качестве места работы своим друзьям и знакомым?')
+                        (0, 0, 0, 'В последнее время, у меня была возможность заниматься интересными задачами и проектами на работе?'),
+                        (1, 0, 0, 'Я чувствую, что мой труд и вклад в работу оцениваются и признаются моими руководителями?'),
+                        (2, 0, 0, 'У меня есть возможность использовать свои профессиональные навыки и навыки, чтобы эффективно выполнять свою работу?'),
+                        (3, 0, 0, 'Мне предоставляется достаточное количество задач и ответственности, чтобы чувствовать себя полезным и востребованным?'),
+                        (4, 0, 0, 'У меня есть возможность развиваться и усовершенствовать свои профессиональные навыки на рабочем месте?'),
+                        (5, 0, 0, 'Я чувствую, что моя работа имеет смысл и приносит вклад в общий успех компании?'),
+                        (6, 0, 0, 'Меня поддерживают в развитии моих профессиональных целей?'),
+                        (7, 0, 0, 'У меня есть возможность вносить предложения и идеи, касающиеся моей работы и рабочих процессов?'),
+                        (8, 0, 0, 'Я ощущаю баланс между тем, что я делаю на работе, и тем, что мне интересно и важно?'),
+                        (9, 0, 0, 'Мои руководители обеспечивают конструктивный обратную связь по моей работе, помогая мне расти и улучшаться?'),
+                        (10, 0, 0, 'Я чувствую, что мои усилия направлены на достижение общих целей и стратегических приоритетов компании?'),
+                        (11, 0, 0, 'У меня есть возможность принимать участие в проектах или инициативах, которые соответствуют моим интересам и профессиональным целям?'),
+                        
+                        (12, 0, 1, 'Lately, have I had the opportunity to take on interesting tasks and projects at work?'),
+                        (13, 0, 1, 'Do I feel like my work and contributions are valued and recognized by my managers?'),
+                        (14, 0, 1, 'Am I able to use my professional skills and abilities to do my job effectively?'),
+                        (15, 0, 1, 'Am I given enough tasks and responsibilities to feel useful and needed?'),
+                        (16, 0, 1, 'Do I have the opportunity to develop and improve my professional skills in the workplace?'),
+                        (17, 0, 1, 'Do I feel like my work is meaningful and contributes to the overall success of the company?'),
+                        (18, 0, 1, 'Am I supported in developing my professional goals?'),
+                        (19, 0, 1, 'Do I have the opportunity to make suggestions and ideas regarding my work and work processes?'),
+                        (20, 0, 1, 'Do I feel a balance between what I do at work and what is interesting and important to me?'),
+                        (21, 0, 1, 'Do my managers provide constructive feedback on my performance to help me grow and improve?'),
+                        (22, 0, 1, 'Do I feel like my efforts are aimed at achieving the overall goals and strategic priorities of the company?'),
+                        (23, 0, 1, 'Do I have the opportunity to participate in projects or initiatives that align with my interests and professional goals?'),
+                        
+                        (24, 1, 0, 'Насколько вероятно, что вы порекомендуете Компанию в качестве места работы своим друзьям и знакомым?'),
+                        (25, 1, 1, 'How likely is it that you would recommend the Company as a place of work to your friends and acquaintances?')
+                        
                         ON CONFLICT DO NOTHING;    
                                  
             ''',
@@ -135,14 +173,15 @@ def first_query():
         conn.close()
 
 
-def get_user_tests(user_id):
+def get_user_tests(user_id, language_id):
     cursor, conn = create_connect()
 
     select_query = f'''
-            SELECT t.id, t.name
+            SELECT t.id, tn.name
               FROM tests as t
               JOIN results_tests as rt ON rt.test_id = t.id
-             WHERE rt.user_id = {user_id} AND rt.date IS NULL
+              JOIN tests_names as tn ON tn.test_id = t.id
+             WHERE rt.user_id = {user_id} AND rt.date IS NULL AND tn.language_id={language_id}
     '''
 
     try:
@@ -153,13 +192,13 @@ def get_user_tests(user_id):
         conn.close()
 
 
-def get_questions(test_id):
+def get_questions(test_id, language_id):
     cursor, conn = create_connect()
 
     select_query = f'''
         SELECT name 
           FROM questions
-         WHERE test_id={test_id}
+         WHERE test_id={test_id} AND language_id={language_id}
     '''
 
     try:
@@ -192,7 +231,7 @@ def get_type_test(test_id):
 
     select_query = f'''
         SELECT tt.id 
-          FROM types_tests as tt
+          FROM tests_types as tt
           JOIN tests as t ON t.type_id = tt.id
          WHERE t.id={test_id}
     '''
@@ -246,8 +285,10 @@ def add_user(name, tg_id):
 def get_all_tests():
     cursor, conn = create_connect()
     select_query = f'''                 
-        SELECT id, name 
-          FROM tests
+        SELECT t.id, tn.name 
+          FROM tests as t
+          JOIN tests_names as tn ON tn.test_id = t.id
+         WHERE tn.language_id = 0
         '''
     try:
         cursor.execute(select_query)
@@ -362,7 +403,7 @@ def get_types():
     cursor, conn = create_connect()
     select_query = f'''                 
         SELECT *
-          FROM types_tests
+          FROM tests_types
         '''
     try:
         cursor.execute(select_query)
@@ -425,6 +466,24 @@ def get_language(tg_id):
     cursor, conn = create_connect()
     select_query = f'''       
                 SELECT l.name
+                  FROM languages as l
+                  JOIN users as u ON l.id = u.language_id
+                 WHERE u.tg_id = {tg_id}
+            '''
+    try:
+        cursor.execute(select_query)
+        language = cursor.fetchone()
+        return language[0]
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_language_id(tg_id):
+    cursor, conn = create_connect()
+    select_query = f'''       
+                SELECT l.id
                   FROM languages as l
                   JOIN users as u ON l.id = u.language_id
                  WHERE u.tg_id = {tg_id}

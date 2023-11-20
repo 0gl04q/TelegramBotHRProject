@@ -1,0 +1,42 @@
+{
+  "ru": {
+    "UserWorks": {
+      "Main": {
+        "Blocked": "Ваш пользователь заблокирован"
+      },
+      "Test": {
+        "Total": "Итого",
+        "Points": "баллов"
+      },
+      "Keyboards": {
+        "CheckSurveys": "Проверить наличие опросов",
+        "SelectLanguage": "Выбрать язык",
+        "QuestSelectLanguage": "Выберите язык",
+        "LanguageChanged": "Язык успешно изменен",
+        "LookingSurveys": "Ищем опросы...",
+        "SelectSurvey": "Выберите опрос",
+        "NoSurvey": "У вас пока нет активных опросов"
+      }
+    }
+  },
+  "en": {
+    "UserWorks": {
+      "Main": {
+        "Blocked": "Your user is blocked"
+      },
+      "Test": {
+        "Total": "Total",
+        "Points": "points"
+      },
+      "Keyboards": {
+        "CheckSurveys": "Check availability of surveys",
+        "SelectLanguage": "Select language",
+        "QuestSelectLanguage": "Select language",
+        "LanguageChanged": "Language changed successfully",
+        "LookingSurveys": "Looking for surveys...",
+        "SelectSurvey": "Select a survey",
+        "NoSurvey": "You don't have any active surveys yet"
+      }
+    }
+  }
+}

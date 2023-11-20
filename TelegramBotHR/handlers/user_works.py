@@ -2,28 +2,30 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from func import menu_func
-from filters import UserRoleFilter
+from filters import UserRoleFilter, CheckSurveysFilter, ChangeLanguageFilter
 from states import MenuStates
 from keyboards.for_menu import keyboard_list
 import db
-from translators import translate_text
+import languages.languages as lg
 
 router = Router()
 
 
-@router.message(F.text.in_(['Проверить наличие опросов', 'View survey availability']), UserRoleFilter())
+@router.message(CheckSurveysFilter(), UserRoleFilter())
 async def check_tests(message: Message, state: FSMContext):
     await menu_func.start_check(message.answer, message.from_user, state)
 
 
-@router.message(F.text.in_(['Выбрать язык', 'Select language']), UserRoleFilter())
+@router.message(ChangeLanguageFilter(), UserRoleFilter())
 async def change_language(message: Message, state: FSMContext):
     language = db.get_language(message.from_user.id)
+
+    language_data = lg.get_languages_data()
 
     all_languages = db.get_all_languages()
 
     await message.answer(
-        text=translate_text('Выберите язык', to_language=language),
+        text=language_data[language]['UserWorks']['Keyboards']['QuestSelectLanguage'],
         reply_markup=keyboard_list(all_languages, key='lang')
     )
     await state.set_state(MenuStates.choosing_language)
@@ -37,6 +39,7 @@ async def add_test_user(callback: CallbackQuery, state: FSMContext):
 
     language = db.get_language(callback.from_user.id)
 
-    await callback.message.edit_text(text=translate_text('Язык успешно изменен', to_language=language), src='ru',
-                                     dest=language)
+    language_data = lg.get_languages_data()
+
+    await callback.message.edit_text(text=language_data[language]['UserWorks']['Keyboards']['LanguageChanged'])
     await menu_func.start_check(callback.message.answer, callback.from_user, state)

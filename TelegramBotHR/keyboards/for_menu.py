@@ -1,5 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, InlineKeyboardMarkup, KeyboardButton, InlineKeyboardButton, \
     KeyboardButtonRequestUser
+import languages.languages as lg
 
 
 # Клавиатура создается из любого списка
@@ -11,21 +12,11 @@ def keyboard_list(items, key: str) -> InlineKeyboardMarkup:
 
 
 # Клавиатура для пользователя
-def keyboard_menu_user(language='ru') -> ReplyKeyboardMarkup:
-    questions = [
-        {
-            'ru': 'Проверить наличие опросов',
-            'en': 'View survey availability'
-        },
-        {
-            'ru': 'Выбрать язык',
-            'en': 'Select language'
-        }
-    ]
+def keyboard_menu_user(languages_data) -> ReplyKeyboardMarkup:
 
     keyboard = [
-        [KeyboardButton(text=questions[0][language])],
-        [KeyboardButton(text=questions[1][language])]
+        [KeyboardButton(text=languages_data['UserWorks']['Keyboards']['CheckSurveys'])],
+        [KeyboardButton(text=languages_data['UserWorks']['Keyboards']['SelectLanguage'])]
     ]
     return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 

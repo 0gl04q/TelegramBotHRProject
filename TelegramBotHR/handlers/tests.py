@@ -6,17 +6,10 @@ from aiogram import types
 from states import MenuStates, TestStates
 from keyboards.for_test import yes_no_kb, zero_to_nine
 from db import get_questions
-from translators import translate_text
+
+import languages.languages as lg
 
 router = Router()
-
-
-async def update_text(message: types.Message, tg_id, question: str, q_number: int):
-    language = db.get_language(tg_id)
-    await message.edit_text(
-        translate_text(question, to_language=language),
-        reply_markup=yes_no_kb(language)
-    )
 
 
 @router.callback_query(MenuStates.choosing_test, F.data.startswith("t_"))
@@ -26,25 +19,32 @@ async def test_chosen(callback: types.CallbackQuery, state: FSMContext):
     type_id = db.get_type_test(test_id)[0]
 
     language = db.get_language(callback.from_user.id)
+    language_id = db.get_language_id(callback.from_user.id)
 
     match type_id:
         case 0:
-            q12 = get_questions(test_id)
+            q12 = get_questions(test_id, language_id)
 
             await state.update_data(questions=q12, number_question=0, total=0, test_id=test_id)
 
             first_question = q12[0][0]
 
-            await callback.message.edit_text(translate_text(first_question, to_language=language), reply_markup=yes_no_kb(language))
+            await callback.message.edit_text(
+                text=first_question,
+                reply_markup=yes_no_kb(language)
+            )
 
         case 1:
-            enps = get_questions(test_id)
+            enps = get_questions(test_id, language_id)
 
             await state.update_data(questions=enps, number_question=0, total=0, test_id=test_id)
 
             first_question = enps[0][0]
 
-            await callback.message.edit_text(translate_text(first_question, to_language=language), reply_markup=zero_to_nine())
+            await callback.message.edit_text(
+                text=first_question,
+                reply_markup=zero_to_nine()
+            )
 
     await state.set_state(TestStates.passing_test)
 
@@ -54,10 +54,13 @@ async def callbacks_enps(callback: types.CallbackQuery, state: FSMContext):
     user_value = await state.get_data()
 
     language = db.get_language(callback.from_user.id)
+    language_data = lg.get_languages_data()
 
     total = int(callback.data.split("_")[1])
 
-    await callback.message.edit_text(translate_text(f"Итого: {total} баллов", to_language=language))
+    await callback.message.edit_text(
+        f"{language_data[language]['UserWorks']['Test']['Total']}: {total} {language_data[language]['UserWorks']['Test']['Points']}"
+    )
 
     db.update_result(test_id=user_value['test_id'], user_id=user_value['user_id'], result=total)
 
@@ -69,6 +72,7 @@ async def callbacks_q12(callback: types.CallbackQuery, state: FSMContext):
     user_value = await state.get_data()
 
     language = db.get_language(callback.from_user.id)
+    language_data = lg.get_languages_data()
 
     action = callback.data.split("_")[1]
 
@@ -80,15 +84,15 @@ async def callbacks_q12(callback: types.CallbackQuery, state: FSMContext):
         user_value['number_question'] += 1
 
     if user_value['number_question'] < 12:
-        await update_text(
-            callback.message,
-            callback.from_user.id,
-            user_value['questions'][user_value['number_question']][0],
-            user_value['number_question']
+        await callback.message.edit_text(
+            text=user_value['questions'][user_value['number_question']][0],
+            reply_markup=yes_no_kb(language)
         )
         await state.update_data(**user_value)
     else:
-        await callback.message.edit_text(translate_text(f"Итого: {user_value['total']} баллов", to_language=language))
+        await callback.message.edit_text(
+            f"{language_data[language]['UserWorks']['Test']['Total']}: {user_value['total']} {language_data[language]['UserWorks']['Test']['Points']}"
+        )
 
         db.update_result(test_id=user_value['test_id'], user_id=user_value['user_id'], result=user_value['total'])
 

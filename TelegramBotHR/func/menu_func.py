@@ -1,27 +1,32 @@
 from keyboards.for_menu import keyboard_menu_user, keyboard_list, keyboard_menu_HR
 from states import MenuStates
 import db
-from translators import translate_text
+import languages.languages as lg
 
 
-async def change_tests(available_tests_tl, answer, state, user_id, language):
+async def change_tests(available_tests_tl, answer, state, user_id, language_data):
+
     await answer(
-        text=translate_text("Ищем опросы...", to_language=language),
-        reply_markup=keyboard_menu_user(language)
+        text=language_data['UserWorks']['Keyboards']['LookingSurveys'],
+        reply_markup=keyboard_menu_user(language_data)
     )
     if available_tests_tl:
         await answer(
-            text=translate_text("Выберите опрос:", to_language=language),
+            text=language_data['UserWorks']['Keyboards']['SelectSurvey'],
             reply_markup=keyboard_list(available_tests_tl, key='t')
         )
 
         await state.update_data(user_id=user_id)
         await state.set_state(MenuStates.choosing_test)
     else:
-        await answer(text=translate_text("У вас пока нет активных опросов", to_language=language), reply_markup=keyboard_menu_user(language))
+        await answer(
+            text=language_data['UserWorks']['Keyboards']['NoSurvey'],
+            reply_markup=keyboard_menu_user(language_data)
+        )
 
 
 async def start_check(answer, from_user, state):
+
     info_user = db.get_user_by_id(from_user.id)
 
     if info_user:
@@ -30,21 +35,18 @@ async def start_check(answer, from_user, state):
         tg_id = from_user.id
 
         language = db.get_language(tg_id)
+        language_id = db.get_language_id(tg_id)
+        language_data = lg.get_languages_data()[language]
 
         if status:
             if role == 0:
                 await answer(text="Меню HR:", reply_markup=keyboard_menu_HR())
                 await state.set_state(MenuStates.choosing_test)
             elif role == 1:
-
-                available_tests_tl = db.get_user_tests(user_id)
-
-                if available_tests_tl:
-                    available_tests_tl = [(test[0], translate_text(test[1], to_language=language)) for test in available_tests_tl]
-
-                await change_tests(available_tests_tl, answer, state, user_id, language)
+                available_tests_tl = db.get_user_tests(user_id, language_id)
+                await change_tests(available_tests_tl, answer, state, user_id, language_data)
 
         else:
-            await answer(text=translate_text('Ваш пользователь заблокирован', to_language=language))
+            await answer(text=language_data['UserWorks']['Main']['Blocked'])
     else:
         await answer(text='Спасибо за подключение, ожидайте пока HR добавит вас')
