@@ -35,7 +35,6 @@ async def start_check(answer, from_user, state):
         tg_id = from_user.id
 
         language = db.get_language(tg_id)
-        language_id = db.get_language_id(tg_id)
         language_data = lg.get_languages_data()[language]
 
         if status:
@@ -43,7 +42,7 @@ async def start_check(answer, from_user, state):
                 await answer(text="Меню HR:", reply_markup=keyboard_menu_HR())
                 await state.set_state(MenuStates.choosing_test)
             elif role == 1:
-                available_tests_tl = db.get_user_tests(user_id, language_id)
+                available_tests_tl = db.get_user_tests(user_id, language)
                 await change_tests(available_tests_tl, answer, state, user_id, language_data)
 
         else:

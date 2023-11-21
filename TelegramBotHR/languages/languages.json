@@ -17,6 +17,10 @@
         "SelectSurvey": "Выберите опрос",
         "NoSurvey": "У вас пока нет активных опросов"
       }
+    },
+    "TestsName": {
+      "0": "Оценка труда",
+      "1": "Рекомендация места работы"
     }
   },
   "en": {
@@ -37,6 +41,10 @@
         "SelectSurvey": "Select a survey",
         "NoSurvey": "You don't have any active surveys yet"
       }
+    },
+    "TestsName": {
+      "0": "Job evaluation",
+      "1": "Recommendation of a place of work"
     }
   }
 }

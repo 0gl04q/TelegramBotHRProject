@@ -1,6 +1,7 @@
 import psycopg2
 from psycopg2 import OperationalError
 from datetime import datetime
+import languages.languages as lg
 
 '''
     Файл для работы с базой данных, все подключения и запросы выполняются здесь
@@ -57,15 +58,6 @@ def first_query():
                         type_id INT NOT NULL,
                         FOREIGN KEY (type_id) REFERENCES tests_types(id) ON DELETE CASCADE
                     );
-                    
-                    CREATE TABLE IF NOT EXISTS tests_names (
-                        id SERIAL PRIMARY KEY,
-                        test_id INT NOT NULL,
-                        language_id INT NOT NULL,
-                        name VARCHAR(100) NOT NULL,
-                        FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE,
-                        FOREIGN KEY (language_id) REFERENCES languages(id) ON DELETE SET NULL
-                    );
 
                     CREATE TABLE IF NOT EXISTS results_tests (
                         id SERIAL PRIMARY KEY,
@@ -109,18 +101,6 @@ def first_query():
         'insert_tests': '''
                 INSERT INTO tests (id, type_id) VALUES (0, 0), (1, 1) ON CONFLICT DO NOTHING;        
             ''',
-
-        'insert_tests_names': '''
-                    INSERT INTO tests_names (id, test_id, language_id, name) 
-                    VALUES 
-                        (0, 0, 0, 'Оценка труда'), 
-                        (1, 0, 1, 'Job evaluation'), 
-                        
-                        (2, 1, 0, 'Рекомендация места работы'),
-                        (3, 1, 1, 'Recommendation of a place of work')
-                        
-                        ON CONFLICT DO NOTHING;        
-                ''',
 
         'insert_questions': '''
                 INSERT INTO questions (id, test_id, language_id, name) 
@@ -173,20 +153,25 @@ def first_query():
         conn.close()
 
 
-def get_user_tests(user_id, language_id):
+def get_user_tests(user_id, language):
     cursor, conn = create_connect()
 
     select_query = f'''
-            SELECT t.id, tn.name
+            SELECT t.id
               FROM tests as t
               JOIN results_tests as rt ON rt.test_id = t.id
-              JOIN tests_names as tn ON tn.test_id = t.id
-             WHERE rt.user_id = {user_id} AND rt.date IS NULL AND tn.language_id={language_id}
+             WHERE rt.user_id = {user_id} AND rt.date IS NULL
     '''
 
     try:
         cursor.execute(select_query)
-        return cursor.fetchall()
+
+        tests = cursor.fetchall()
+
+        language_data = lg.get_languages_data()[language]
+
+        return [(item[0], language_data['TestsName'][str(item[0])]) for item in tests]
+
     finally:
         cursor.close()
         conn.close()
@@ -282,17 +267,20 @@ def add_user(name, tg_id):
         conn.close()
 
 
-def get_all_tests():
+def get_all_tests(language='ru'):
     cursor, conn = create_connect()
     select_query = f'''                 
-        SELECT t.id, tn.name 
+        SELECT t.id
           FROM tests as t
-          JOIN tests_names as tn ON tn.test_id = t.id
-         WHERE tn.language_id = 0
         '''
     try:
         cursor.execute(select_query)
-        return cursor.fetchall()
+
+        tests = cursor.fetchall()
+        language_data = lg.get_languages_data()[language]
+
+        return [(item[0], language_data['TestsName'][str(item[0])]) for item in tests]
+
     finally:
         cursor.close()
         conn.close()
