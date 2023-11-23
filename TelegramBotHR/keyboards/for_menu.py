@@ -1,6 +1,5 @@
 from aiogram.types import ReplyKeyboardMarkup, InlineKeyboardMarkup, KeyboardButton, InlineKeyboardButton, \
     KeyboardButtonRequestUser
-import languages.languages as lg
 
 
 # Клавиатура создается из любого списка

@@ -27,6 +27,7 @@ async def change_tests(available_tests_tl, answer, state, user_id, language_data
 
 async def start_check(answer, from_user, state):
 
+    # ищем информацию о пользователе
     info_user = db.get_user_by_id(from_user.id)
 
     if info_user:

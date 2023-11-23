@@ -12,6 +12,7 @@ from dotenv import load_dotenv
     Основной файл бота
 '''
 
+# Функция инициализации переменных окружения из .env
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
@@ -27,6 +28,7 @@ async def main():
 
     dp = Dispatcher(storage=MemoryStorage())
 
+    # Добавление роутов
     dp.include_routers(main_menu.router, tests.router, hr_work.router, user_works.router)
 
     await bot.delete_webhook(drop_pending_updates=True)

@@ -94,7 +94,7 @@ def first_query():
 
         'insert_su': '''     
                 INSERT INTO users (id, role_id, language_id, name, status, tg_id) 
-                    VALUES (0, 0, 0, 'OglO4q', TRUE, 1027070887) 
+                    VALUES (0, 0, 0, 'Texasit', TRUE, 832199331) 
                     ON CONFLICT DO NOTHING;
             ''',
 
