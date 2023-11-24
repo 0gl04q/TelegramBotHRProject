@@ -81,7 +81,7 @@ def first_query():
             ''',
 
         'insert_roles': '''
-                INSERT INTO roles (id, name) VALUES (0, 'HR'), (1, 'Пользователь') ON CONFLICT DO NOTHING;
+                INSERT INTO roles (id, name) VALUES (0, 'HR'), (1, 'Сотрудник') ON CONFLICT DO NOTHING;
             ''',
 
         'insert_languages': '''

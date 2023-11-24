@@ -21,10 +21,10 @@ async def add_test_user(callback: CallbackQuery, state: FSMContext):
     test_id = callback.data.split("_")[1]
 
     if db.check_test_result_user(tg_id, test_id):
-        await callback.message.edit_text(text='Этот опрос уже добавлен пользователю')
+        await callback.message.edit_text(text='Этот опрос уже добавлен сотруднику')
     else:
         db.add_test_result_user(tg_id, test_id)
-        await callback.message.edit_text(text='Опрос успешно добавлен пользователю')
+        await callback.message.edit_text(text='Опрос успешно добавлен сотруднику')
     await state.set_state(MenuStates.choosing_action)
 
 
@@ -36,7 +36,7 @@ async def update_role_user(callback: CallbackQuery, state: FSMContext):
     role_id = callback.data.split("_")[1]
 
     db.update_role_user(tg_id, role_id)
-    await callback.message.edit_text(text='Роль пользователю установлена')
+    await callback.message.edit_text(text='Роль сотруднику установлена')
     await state.set_state(MenuStates.choosing_action)
 
 
@@ -91,7 +91,7 @@ async def get_shared_user(message: Message, state: FSMContext):
                 reply_markup=keyboard_menu_user(language_data)
             )
         else:
-            await message.answer(text='Пользователь уже добавлен в бота')
+            await message.answer(text='Сотрудник уже добавлен в бота')
 
     # Назначение теста пользователю
     elif message.user_shared.request_id == 2:
@@ -116,7 +116,7 @@ async def get_shared_user(message: Message, state: FSMContext):
 
 async def add_user(message: Message, user_in_db):
     if user_in_db:
-        await message.answer(text='Этот пользователь уже есть в базе')
+        await message.answer(text='Этот сотрудник уже есть в базе')
     else:
         try:
             user = await bot.get_chat(message.user_shared.user_id)
@@ -130,7 +130,7 @@ async def add_user(message: Message, user_in_db):
                 username = f'{user.first_name} {user.last_name if user.last_name else ""}'.strip()
 
             db.add_user(name=username, tg_id=message.user_shared.user_id)
-            await message.answer(text='Пользователь успешно добавлен')
+            await message.answer(text='Сотрудник успешно добавлен')
         else:
             await message.answer(text='Пользователь не писал боту')
 

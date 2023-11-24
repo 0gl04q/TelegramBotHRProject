@@ -24,17 +24,17 @@ def keyboard_menu_user(languages_data) -> ReplyKeyboardMarkup:
 def keyboard_menu_HR() -> ReplyKeyboardMarkup:
     keyboard = [
         [KeyboardButton(
-            text='Назначить опрос пользователю',
+            text='Назначить опрос сотруднику',
             request_user=KeyboardButtonRequestUser(
                 request_id=2,
             ))],
         [KeyboardButton(
-            text='Добавить пользователя',
+            text='Добавить сотрудника',
             request_user=KeyboardButtonRequestUser(
                 request_id=1,
             )
         ), KeyboardButton(
-            text='Сменить роль пользователю',
+            text='Сменить роль сотруднику',
             request_user=KeyboardButtonRequestUser(
                 request_id=3,
             )
