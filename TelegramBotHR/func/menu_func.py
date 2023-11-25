@@ -4,12 +4,13 @@ import db
 import languages.languages as lg
 
 
-async def change_tests(available_tests_tl, answer, state, user_id, language_data):
+async def change_tests(available_tests_tl, answer, state, user_id, language_data, role=0):
 
     await answer(
         text=language_data['UserWorks']['Keyboards']['LookingSurveys'],
-        reply_markup=keyboard_menu_user(language_data)
+        reply_markup=keyboard_menu_user(language_data) if role else None
     )
+
     if available_tests_tl:
         await answer(
             text=language_data['UserWorks']['Keyboards']['SelectSurvey'],
@@ -21,7 +22,7 @@ async def change_tests(available_tests_tl, answer, state, user_id, language_data
     else:
         await answer(
             text=language_data['UserWorks']['Keyboards']['NoSurvey'],
-            reply_markup=keyboard_menu_user(language_data)
+            reply_markup=keyboard_menu_user(language_data) if role else None
         )
 
 
@@ -38,13 +39,14 @@ async def start_check(answer, from_user, state):
         language = db.get_language(tg_id)
         language_data = lg.get_languages_data()[language]
 
+        available_tests_tl = db.get_user_tests(user_id, language)
         if status:
             if role == 0:
                 await answer(text="Меню HR:", reply_markup=keyboard_menu_HR())
                 await state.set_state(MenuStates.choosing_test)
+                await change_tests(available_tests_tl, answer, state, user_id, language_data, role)
             elif role == 1:
-                available_tests_tl = db.get_user_tests(user_id, language)
-                await change_tests(available_tests_tl, answer, state, user_id, language_data)
+                await change_tests(available_tests_tl, answer, state, user_id, language_data, role)
 
         else:
             await answer(text=language_data['UserWorks']['Main']['Blocked'])

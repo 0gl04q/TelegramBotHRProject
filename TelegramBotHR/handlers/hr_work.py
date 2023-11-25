@@ -2,9 +2,10 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 import db
-from keyboards.for_menu import keyboard_list, keyboard_menu_user
+from func.menu_func import start_check
+from keyboards.for_menu import keyboard_list, keyboard_menu_user, keyboard_type
 from filters import AdminRoleFilter
-from states import AddTestUser, MenuStates, UpdateRoleUser, ReportStates
+from states import AddTestUser, MenuStates, UpdateRoleUser, ReportStates, AddUser, AddTestDepartment
 from aiogram.utils.formatting import (
     Bold, as_list, as_marked_section, as_key_value
 )
@@ -83,13 +84,19 @@ async def get_shared_user(message: Message, state: FSMContext):
     # Добавление пользователя
     if message.user_shared.request_id == 1:
         if not user_in_db:
-            await add_user(message, user_in_db)
-            await state.set_state(MenuStates.choosing_action)
-            await bot.send_message(
-                chat_id=message.user_shared.user_id,
-                text='Вас добавили в HR бота!',
-                reply_markup=keyboard_menu_user(language_data)
+            await state.set_state(AddUser.add_user)
+            await state.update_data(
+                user_in_db=user_in_db,
+                language_data=language_data,
+                shared_user=message.user_shared.user_id
             )
+
+            departments = db.get_departments()
+            await message.answer(
+                text='Выберите подразделение',
+                reply_markup=keyboard_list(departments, key='dep')
+            )
+
         else:
             await message.answer(text='Сотрудник уже добавлен в бота')
 
@@ -99,7 +106,11 @@ async def get_shared_user(message: Message, state: FSMContext):
             all_test = db.get_all_tests()
             await state.update_data(tg_id=message.user_shared.user_id)
             await state.set_state(AddTestUser.choosing_test)
-            await message.answer(text='Выберите опрос', reply_markup=keyboard_list(all_test, key='at'))
+            await message.answer(
+                text='Выберите опрос',
+                reply_markup=keyboard_list(all_test, key='at')
+            )
+
         else:
             await message.answer(text='Пользователь не писал боту')
 
@@ -114,12 +125,19 @@ async def get_shared_user(message: Message, state: FSMContext):
             await message.answer(text='Пользователь не писал боту')
 
 
-async def add_user(message: Message, user_in_db):
+@router.callback_query(AddUser.add_user, F.data.startswith('dep_'))
+async def add_user(callback: CallbackQuery, state: FSMContext):
+    state_data = await state.get_data()
+    user_in_db = state_data['user_in_db']
+    language_data = state_data['language_data']
+    shared_user = state_data['shared_user']
+    department_id = callback.data.split("_")[1]
+
     if user_in_db:
-        await message.answer(text='Этот сотрудник уже есть в базе')
+        await callback.message.edit_text(text='Этот сотрудник уже есть в базе')
     else:
         try:
-            user = await bot.get_chat(message.user_shared.user_id)
+            user = await bot.get_chat(shared_user)
         except:
             user = None
 
@@ -129,10 +147,23 @@ async def add_user(message: Message, user_in_db):
             if user.username is None:
                 username = f'{user.first_name} {user.last_name if user.last_name else ""}'.strip()
 
-            db.add_user(name=username, tg_id=message.user_shared.user_id)
-            await message.answer(text='Сотрудник успешно добавлен')
+            db.add_user(
+                name=username,
+                tg_id=shared_user,
+                department_id=department_id,
+                role_id=0 if department_id == '0' else 1
+            )
+
+            await callback.message.edit_text(text='Сотрудник успешно добавлен')
+
+            await state.set_state(MenuStates.choosing_action)
+            await bot.send_message(
+                chat_id=shared_user,
+                text='Вас добавили в HR бота!',
+                reply_markup=keyboard_menu_user(language_data)
+            )
         else:
-            await message.answer(text='Пользователь не писал боту')
+            await callback.message.edit_text(text='Пользователь не писал боту')
 
 
 @router.message(F.text == 'Отчеты', AdminRoleFilter())
@@ -140,3 +171,47 @@ async def change_report_tests(message: Message, state: FSMContext):
     all_tests = db.get_all_tests()
     await message.answer(text='Выберите опрос для получения отчета', reply_markup=keyboard_list(all_tests, key='gt'))
     await state.set_state(ReportStates.choosing_test)
+
+
+@router.message(F.text == 'Назначить опрос подразделению', AdminRoleFilter())
+async def change_department(message: Message, state: FSMContext):
+    departments = db.get_departments()
+    await state.set_state(AddTestDepartment.choosing_department)
+    await message.answer(
+        text='Выберите подразделение',
+        reply_markup=keyboard_list(departments, key='dep')
+    )
+
+
+@router.message(F.text == 'Проверить наличие опросов', AdminRoleFilter())
+async def change_survey(message: Message, state: FSMContext):
+    await start_check(message.answer, message.from_user, state)
+
+
+@router.callback_query(AddTestDepartment.choosing_department, F.data.startswith('dep_'))
+async def change_department_test(callback: CallbackQuery, state: FSMContext):
+    all_tests = db.get_all_tests()
+    department_id = callback.data.split("_")[1]
+    await state.set_state(AddTestDepartment.choosing_test)
+    await state.update_data(department_id=department_id)
+    await callback.message.edit_text(
+        text='Выберите опрос',
+        reply_markup=keyboard_list(all_tests, key='at')
+    )
+
+
+@router.callback_query(AddTestDepartment.choosing_test, F.data.startswith('at_'))
+async def add_department_test(callback: CallbackQuery, state: FSMContext):
+    state_data = await state.get_data()
+    department_id = state_data['department_id']
+    test_id = callback.data.split("_")[1]
+
+    users = db.get_users_by_department(department_id)
+
+    for user in users:
+        if not db.check_test_result_user(user[0], test_id):
+            db.add_test_result_user(user[0], test_id)
+
+    await callback.message.edit_text(
+        text='Опросы успешно назначены'
+    )

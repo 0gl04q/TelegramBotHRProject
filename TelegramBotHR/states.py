@@ -15,7 +15,17 @@ class TestStates(StatesGroup):
     passing_test = State()
 
 
+class AddUser(StatesGroup):
+    change_department = State()
+    add_user = State()
+
+
 class AddTestUser(StatesGroup):
+    choosing_test = State()
+
+
+class AddTestDepartment(StatesGroup):
+    choosing_department = State()
     choosing_test = State()
 
 
@@ -24,4 +34,5 @@ class UpdateRoleUser(StatesGroup):
 
 
 class ReportStates(StatesGroup):
+    choosing_type = State()
     choosing_test = State()

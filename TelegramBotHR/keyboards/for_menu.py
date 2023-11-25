@@ -5,14 +5,14 @@ from aiogram.types import ReplyKeyboardMarkup, InlineKeyboardMarkup, KeyboardBut
 # Клавиатура создается из любого списка
 def keyboard_list(items, key: str) -> InlineKeyboardMarkup:
     buttons = [
-        [InlineKeyboardButton(text=f"{item[1]}", callback_data=f"{key}_{item[0]}")] for item in items]
+        [InlineKeyboardButton(text=f"{item[1]}", callback_data=f"{key}_{item[0]}")] for item in items
+    ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
 
 # Клавиатура для пользователя
 def keyboard_menu_user(languages_data) -> ReplyKeyboardMarkup:
-
     keyboard = [
         [KeyboardButton(text=languages_data['UserWorks']['Keyboards']['CheckSurveys'])],
         [KeyboardButton(text=languages_data['UserWorks']['Keyboards']['SelectLanguage'])]
@@ -27,7 +27,7 @@ def keyboard_menu_HR() -> ReplyKeyboardMarkup:
             text='Назначить опрос сотруднику',
             request_user=KeyboardButtonRequestUser(
                 request_id=2,
-            ))],
+            )), KeyboardButton(text='Назначить опрос подразделению')],
         [KeyboardButton(
             text='Добавить сотрудника',
             request_user=KeyboardButtonRequestUser(
@@ -40,5 +40,15 @@ def keyboard_menu_HR() -> ReplyKeyboardMarkup:
             )
         )],
         [KeyboardButton(text='Отчеты')],
+        [KeyboardButton(text='Проверить наличие опросов')],
     ]
     return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+
+
+def keyboard_type() -> InlineKeyboardMarkup:
+    buttons = [
+        [InlineKeyboardButton(text=f"По подразделениям", callback_data='ct_0')],
+        [InlineKeyboardButton(text=f"По пользователям", callback_data='ct_1')],
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard

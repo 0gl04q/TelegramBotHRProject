@@ -37,15 +37,22 @@ def first_query():
                         name VARCHAR(50) NOT NULL
                     );
                     
+                    CREATE TABLE IF NOT EXISTS departments (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(50) NOT NULL
+                    );
+                    
                     CREATE TABLE IF NOT EXISTS users (
                         id SERIAL PRIMARY KEY,
                         role_id INT,
                         language_id INT,
+                        department_id INT, 
                         name VARCHAR(100) NOT NULL,
                         status BOOLEAN,
                         tg_id BIGINT NOT NULL UNIQUE,
                         FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL,
-                        FOREIGN KEY (language_id) REFERENCES languages(id) ON DELETE SET NULL
+                        FOREIGN KEY (language_id) REFERENCES languages(id) ON DELETE SET NULL,
+                        FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
                     );
 
                     CREATE TABLE IF NOT EXISTS tests_types (
@@ -92,9 +99,15 @@ def first_query():
                 INSERT INTO tests_types (id, name) VALUES (0, 'Q12'), (1, 'eNps') ON CONFLICT DO NOTHING;
             ''',
 
+        'insert_departments': '''     
+                    INSERT INTO departments (id, name) 
+                    VALUES (0, 'HRы'), (1, 'Бухгалтеры'), (2, 'Диспетчера'), (3, 'Логисты') 
+                    ON CONFLICT DO NOTHING;
+                ''',
+
         'insert_su': '''     
-                INSERT INTO users (id, role_id, language_id, name, status, tg_id) 
-                    VALUES (0, 0, 0, 'Texasit', TRUE, 832199331) 
+                INSERT INTO users (id, role_id, language_id, department_id, name, status, tg_id) 
+                    VALUES (0, 0, 0, 0, '0gl04q', TRUE, 1027070887) 
                     ON CONFLICT DO NOTHING;
             ''',
 
@@ -148,6 +161,40 @@ def first_query():
         return True
     except OperationalError:
         return False
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_departments():
+    cursor, conn = create_connect()
+
+    select_query = f'''
+            SELECT *
+              FROM departments
+    '''
+
+    try:
+        cursor.execute(select_query)
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_users_by_department(department_id):
+    cursor, conn = create_connect()
+
+    select_query = f'''
+            SELECT u.tg_id
+              FROM users as u
+             WHERE u.department_id = {department_id} 
+        '''
+    try:
+        cursor.execute(select_query)
+        return cursor.fetchall()
+
     finally:
         cursor.close()
         conn.close()
@@ -253,11 +300,11 @@ def update_result(test_id, user_id, result):
         conn.close()
 
 
-def add_user(name, tg_id):
+def add_user(name, tg_id, department_id, role_id):
     cursor, conn = create_connect()
     select_query = f'''                 
-        INSERT INTO users (role_id, language_id, name, status, tg_id)
-             VALUES (1, 0, '{name}', TRUE, {tg_id})
+        INSERT INTO users (role_id, language_id, department_id, name, status, tg_id)
+             VALUES ({role_id}, 0, {department_id},'{name}', TRUE, {tg_id})
         '''
     try:
         cursor.execute(select_query)
@@ -416,17 +463,33 @@ def get_results_tests(test_id):
         conn.close()
 
 
+def get_department(department_id):
+    cursor, conn = create_connect()
+    select_query = f'''                 
+                SELECT name
+                  FROM departments
+                 WHERE id = {department_id}
+                '''
+    try:
+        cursor.execute(select_query)
+        return cursor.fetchone()[0]
+    finally:
+        cursor.close()
+        conn.close()
+
+
 def get_results_tests_success(test_id):
     cursor, conn = create_connect()
     select_query = f'''                 
-            SELECT u.name, rt.date
+            SELECT u.name, rt.total, u.department_id
               FROM results_tests as rt
               JOIN users as u ON u.id = rt.user_id
              WHERE NOT rt.date IS NULL AND rt.test_id = {test_id}
             '''
     try:
         cursor.execute(select_query)
-        rt_list = [f'{rt[0]} - {rt[1]}' for rt in cursor.fetchall()]
+        rt_list = [f'Подразделение: {get_department(rt[2])}, пользователь: {rt[0]}, итого: {rt[1]}' for rt in
+                   cursor.fetchall()]
         return rt_list
     finally:
         cursor.close()
