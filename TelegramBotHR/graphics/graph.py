@@ -7,9 +7,9 @@ async def create_graph(data_survey):
     plt.figure(figsize=(8, 8))
     plt.pie(data_survey.values(), labels=data_survey.keys(), autopct='%1.1f%%', startangle=140,
             colors=['gold', 'lightskyblue', 'lightcoral', 'lightgreen'])
-    plt.title('Распределение ответов на опрос Q12')
+    plt.title('Распределение ответов на опрос')
 
-    name = 'график_q12.png'
+    name = 'график.png'
     plt.savefig(name)
 
     return name
