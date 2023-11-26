@@ -47,8 +47,8 @@ def keyboard_menu_HR() -> ReplyKeyboardMarkup:
 
 def keyboard_type() -> InlineKeyboardMarkup:
     buttons = [
-        [InlineKeyboardButton(text=f"По подразделениям", callback_data='ct_0')],
-        [InlineKeyboardButton(text=f"По пользователям", callback_data='ct_1')],
+        [InlineKeyboardButton(text=f"График", callback_data='ct_0')],
+        [InlineKeyboardButton(text=f"Общий", callback_data='ct_1')],
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard

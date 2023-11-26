@@ -11,7 +11,9 @@ from aiogram.utils.formatting import (
 )
 from main import bot
 import languages.languages as lg
-
+from graphics.graph import create_graph
+from aiogram.types import InputFile
+from aiogram.types import FSInputFile, URLInputFile, BufferedInputFile
 router = Router()
 
 
@@ -44,35 +46,47 @@ async def update_role_user(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(ReportStates.choosing_test, F.data.startswith("gt_"))
 async def get_report_test(callback: CallbackQuery, state: FSMContext):
     test_id = callback.data.split("_")[1]
+    state_data = await state.get_data()
+    type_id = state_data['type_id']
 
-    all_users_test = db.get_results_tests(test_id)
-    success = db.get_results_tests_success(test_id)
-    no_success = db.get_results_tests_no_success(test_id)
+    if type_id:
+        all_users_test = db.get_results_tests(test_id)
+        success = db.get_results_tests_success(test_id)
+        no_success = db.get_results_tests_no_success(test_id)
 
-    content = as_list(
-        as_marked_section(
-            Bold("Прошли:"),
-            *(success if success else ['Никто']),
-            marker="✅ ",
-        ),
-        as_marked_section(
-            Bold("Не прошли:"),
-            *(no_success if no_success else ['Никто']),
-            marker="❌ ",
-        ),
-        as_marked_section(
-            Bold("Итого:"),
-            as_key_value("Всего", len(all_users_test)),
-            as_key_value("Прошли", len(success)),
-            as_key_value("Не прошли", len(no_success)),
-            marker="- ",
-        ),
-        sep="\n\n",
-    )
+        content = as_list(
+            as_marked_section(
+                Bold("Прошли:"),
+                *(success if success else ['Никто']),
+                marker="✅ ",
+            ),
+            as_marked_section(
+                Bold("Не прошли:"),
+                *(no_success if no_success else ['Никто']),
+                marker="❌ ",
+            ),
+            as_marked_section(
+                Bold("Итого:"),
+                as_key_value("Всего", len(all_users_test)),
+                as_key_value("Прошли", len(success)),
+                as_key_value("Не прошли", len(no_success)),
+                marker="- ",
+            ),
+            sep="\n\n",
+        )
 
-    await callback.message.edit_text(**content.as_kwargs())
-    await state.set_state(MenuStates.choosing_action)
+        await callback.message.edit_text(**content.as_kwargs())
+        await state.set_state(MenuStates.choosing_action)
+    else:
+        data = dict(db.get_result_graph(test_id))
 
+        name_file = await create_graph(data)
+
+        image_from_pc = FSInputFile(name_file)
+        await callback.message.answer_photo(
+            image_from_pc,
+            caption='График'
+        )
 
 @router.message(F.user_shared, AdminRoleFilter())
 async def get_shared_user(message: Message, state: FSMContext):
@@ -167,10 +181,22 @@ async def add_user(callback: CallbackQuery, state: FSMContext):
 
 
 @router.message(F.text == 'Отчеты', AdminRoleFilter())
-async def change_report_tests(message: Message, state: FSMContext):
+async def change_report_type(message: Message, state: FSMContext):
+    await message.answer(
+        text='Выберите вид отчета',
+        reply_markup=keyboard_type()
+    )
+    await state.set_state(ReportStates.choosing_type)
+
+
+@router.callback_query(ReportStates.choosing_type)
+async def change_report_test(callback: CallbackQuery, state: FSMContext):
+    type_id = int(callback.data.split("_")[1])
     all_tests = db.get_all_tests()
-    await message.answer(text='Выберите опрос для получения отчета', reply_markup=keyboard_list(all_tests, key='gt'))
+    await callback.message.edit_text(text='Выберите опрос для получения отчета',
+                                     reply_markup=keyboard_list(all_tests, key='gt'))
     await state.set_state(ReportStates.choosing_test)
+    await state.update_data(type_id=type_id)
 
 
 @router.message(F.text == 'Назначить опрос подразделению', AdminRoleFilter())

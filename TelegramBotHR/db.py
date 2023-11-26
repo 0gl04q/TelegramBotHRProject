@@ -183,6 +183,30 @@ def get_departments():
         conn.close()
 
 
+def get_result_graph(test_id):
+    cursor, conn = create_connect()
+
+    select_query = f'''
+        SELECT
+            de.name,
+            SUM(rt.total)
+        FROM results_tests as rt
+        JOIN users as u ON u.id = rt.user_id 
+        JOIN departments as de ON de.id = u.department_id
+        WHERE rt.test_id = {test_id}
+        GROUP BY
+            de.name
+        '''
+
+    try:
+        cursor.execute(select_query)
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
 def get_users_by_department(department_id):
     cursor, conn = create_connect()
 
