@@ -12,8 +12,7 @@ from aiogram.utils.formatting import (
 from main import bot
 import languages.languages as lg
 from graphics.graph import create_graph
-from aiogram.types import InputFile
-from aiogram.types import FSInputFile, URLInputFile, BufferedInputFile
+from aiogram.types import FSInputFile
 router = Router()
 
 
